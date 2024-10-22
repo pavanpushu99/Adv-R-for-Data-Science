@@ -1,0 +1,197 @@
+---
+title: "Stat 650 : HW1"
+author: "Pavan Malapati"
+format: pdf
+editor: visual
+---
+
+# Exercise 1
+
+## a : What are the four common data types of vectors in R?
+
+**Answer :** logical, integer, double, and character are the four common data types of vectors in R.
+
+## b : How is a matrix different from a data frame?
+
+**Answer :** A matrix can only contain elements of the same data type (e.g., all numeric), while a data frame can contain columns with different data types (e.g., numeric, character, logical), making it more flexible for handling mixed data.
+
+## c : What does as.integer() do when applied to a logical vector?
+
+**Answer :** The `as.integer()` function would coerce a logical vector into an integer vector.  Specifically, `FALSE` gets coerced to 0 and `TRUE` to 1.  For example:
+```{r}
+x <- c(FALSE, FALSE, TRUE, TRUE)
+as.integer(x)
+```
+
+## d : What does as.matrix() do when applied to a data frame with columns of different types?
+
+**Answer :** The `as.matrix()` function would coerce all the columns of a data frame to the same type.  For example:
+
+```{r}
+df <- data.frame(
+  x = 1:4,
+  y = c("a", "b", "c", "d")
+)
+as.matrix(df) # all character type
+```
+
+```{r}
+df <- data.frame(
+  x = 1:4,
+  y = c(TRUE, TRUE, FALSE, FALSE)
+)
+as.matrix(df) # all integer type
+```
+
+# Exercise 2 :Determine the type of each vector below. Print out the value of each vector and use the typeof() function
+
+**Answer :**
+```{r}
+a <- c(1, 2, 3, 4, 5)
+a
+typeof(a)
+b <- 1:5
+b
+typeof(b)
+c <- c(sqrt(2), 4.7e4, 1/0)
+c
+typeof(c)
+d <- c(T, T, T, T)
+d
+typeof(d)
+e <- c("1", 2, 3)
+e
+typeof(e)
+f <- c(7L, NA, NA, 5L, 3L)
+f
+typeof(f)
+g <- c(7L, "NA", "NA", 5L, 3L)
+g
+typeof(g)
+h <- c()
+h
+typeof(h)
+```
+
+# Exercise 3
+
+```{r}
+head(airquality)
+```
+
+
+## a : Run the following code to subset the Ozone column and assign it to a variable called Ozone1.
+
+**Answer :**
+```{r}
+Ozone1 <- airquality$Ozone
+head(Ozone1)
+```
+
+## b : Use is.na() to remove the missing data (NA values) from the vector Ozone1. Assign the vector with the missing values removed to a variable called Ozone2. How many NA values were removed?
+
+**Answer :**
+```{r}
+sum(is.na(Ozone1))
+```
+There are total 37 NA values.
+```{r}
+Ozone2 <- Ozone1[!is.na(Ozone1)]
+```
+
+## c : Compute the min, median, mean, max, and standard deviation of the numeric vector Ozone2.
+
+**Answer :**
+```{r}
+summary(Ozone2)
+sd(Ozone2)
+```
+
+## d : Run the following commands, and explain how each command handles missing data.
+
+**Answer :**
+```{r}
+summary(airquality$Ozone)
+```
+By default, the `summary()` command removes the `NA` values and then computes summary statistics.  The number of NA values is also provided.
+
+```{r}
+sd(airquality$Ozone)
+```
+The `sd()` function is not working here and just returns an NA.
+
+```{r}
+sd(airquality$Ozone, na.rm = TRUE)
+```
+When setting the argument `na.rm = TRUE`, the `sd()` function removes the `NA` values and then compute the standard deviation.
+
+## e : How many rows of the data frame airquality have one or more missing values?
+
+**Answer :**
+```{r}
+nrow(airquality) - nrow(na.omit(airquality))
+```
+42 rows have one or more `NA` value.
+
+# Exercise 4
+
+## a : Use seq() to create a vector p of numbers from 0 to 1 going in increments of 0.2.
+
+**Answer :**
+```{r}
+p <- seq(0, 1, by = 0.2)
+p
+```
+
+## b : Use plot() to plot p in the x coordinate and p(1-p) in the y coordinate. Read the help page for plot and experiment with the type argument to find a good choice for this graph.
+
+**Answer :**
+```{r}
+plot(p, p*(1-p), type = "l")
+```
+
+## c : Repeat, but with creating a vector p of numbers from 0 to 1 going in increments of 0.01
+
+**Answer :**
+```{r}
+p <- seq(0, 1, by = 0.01)
+plot(p, p*(1-p), type = "l")
+```
+
+# Exercise 5
+
+```{r}
+movies <- read.csv("https://ericwfox.github.io/data/movies.csv")
+head(movies)
+```
+
+## a : Make a histogram and box plot of the variable runtime. Describe the distribution in terms of its center, shape, and spread. Are there any potential outliers?
+
+**Answer :**
+```{r}
+hist(movies$runtime, main = "Histogram", xlab = "Runtime (minutes)", col = "orange", border = "black")
+```
+```{r}
+boxplot(movies$runtime, main = "Boxplot", ylab = "Runtime (minutes)", col = "orange")
+```
+The peak of the histogram is around 100 minutes, indicating that the most frequent movie runtimes are in this range.The center of the runtime data lies around 100 minutes, The shape of the histogram is right skewed and the spread of the data is fairly wide where there are movie with runtime more than 150 minutes.From the boxplot we can observe that there are many outliers which lies outside of the whiskers in the boxplot i.e. approximately outside of the range 60 and 150 minutes.
+
+## b : Make a scatter plot using two numerical variables of your choosing. Add the least square line, and describe the association in the scatter plot.
+
+**Answer :**
+```{r}
+plot(movies$critics_score, movies$audience_score, main = "Scatter Plot", xlab = "Critics Score", ylab = "Audience Score",  col = "blue")
+abline(lm(audience_score ~ critics_score, data = movies), col = "red")
+```
+The scatter plot shows a positive association between the critics scores and audience scores. This means that as the critics scores increase, the audience scores tend to increase as well. The red line confirms this trend.
+
+## C : Make side-by-side box plots with mpaa_rating on the x-axis and imdb_rating on the y-axis. In the plot the categories (i.e., levels) of mpaa_rating should have the following ordering: G, PG, PG-13, R, NC-17, Unrated
+
+**Answer :**
+```{r}
+ratings = c("G", "PG", "PG-13", "R", "NC-17", "Unrated")
+movies$mpaa_rating <- factor(movies$mpaa_rating,levels = ratings)
+boxplot(imdb_rating ~ mpaa_rating, data = movies, main = "Side by Side Box plot", xlab = "MPAA Rating", ylab = "IMDB Rating", col = "orange", border = "black")
+```
+Compared  to all of the levels, The "G" has somewhat highest IMDB rating, while the "PG-13" has lowest IMDB rating.
+
