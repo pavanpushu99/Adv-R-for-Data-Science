@@ -1,0 +1,100 @@
+---
+title: "STAT 650 : Homework 2"
+author: "Pavan Malapati"
+format: pdf
+editor: visual
+---
+
+**Exercise 1 :** Write a function called sum_squares that for any given positive integer n computes the sum 1^2 + 2^2 + 3^2 +.... Use your function to find the value of the sum when n = 5, n = 10 and n = 50.
+
+**Solution :**
+```{r}
+sum_squares <- function(n) {
+  return(sum((1:n)^2))}
+cat("Sum of squares for n = 5:",sum_squares(5), "\n")
+cat("Sum of squares for n = 10:",sum_squares(10), "\n")
+cat("Sum of squares for n = 50:",sum_squares(50), "\n")
+```
+
+**Exercise 2 :**
+```{r}
+head(airquality)
+```
+
+a) Use a for loop to count the number of NA values in each column of the airquality data
+frame.
+
+**Solution :**
+```{r}
+counts <- c()
+for(i in 1:6) {
+  counts[i] <- sum(is.na(airquality[, i]))}
+names(counts) <- names(airquality) 
+counts
+```
+
+b) Repeat part (a), but this time use the apply() function instead of a for loop.
+
+**Solution :**
+```{r}
+count_na <- function(x) {
+  sum(is.na(x))}
+apply(airquality, MARGIN = 2, FUN = count_na)
+```
+
+**Exercise 3 :**
+Use a for loop to repeatedly simulate rolling two dice 10,000 times, and compute the proportion of
+rolls where the sum is 7.
+
+**Solution :**
+```{r}
+set.seed(100)
+count<-0
+
+for(i in 1:10000){
+  dice<-sample(1:6, size = 2, replace = TRUE) 
+  if(sum(dice) == 7){
+    count <- count + 1
+  }
+}
+
+pr <- count/10000
+
+cat("Number of rolls where the sum is 7:",count)
+cat("\nProportion of rolls where the sum is 7:", pr)
+```
+
+
+**Exercise 4 :** Write a function called compute_ci() that computes a confidence interval for a population mean.
+
+**Solution :**
+```{r}
+compute_ci <- function(x, cl = 0.95, na_rm = FALSE) {
+  if(na_rm) {
+    x <- x[!is.na(x)]
+  }
+  n <- length(x)
+  SE <- sd(x) / sqrt(n)
+  t <- abs(qt((1-cl)/2, df = n-1))
+  ci <- c()
+  ci[1] <- mean(x) - t * SE
+  ci[2] <- mean(x) + t * SE
+  ci
+}
+```
+```{r}
+library(mosaicData)
+compute_ci(CPS85$wage) # uses default cl = 0.95
+```
+```{r}
+compute_ci(CPS85$wage, cl = 0.8)
+```
+```{r}
+# Ozone column has NA values
+compute_ci(airquality$Ozone, cl = 0.9, na_rm = TRUE)
+```
+
+
+
+
+
