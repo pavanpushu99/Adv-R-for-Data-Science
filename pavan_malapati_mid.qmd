@@ -1,0 +1,194 @@
+---
+title: "STAT 650 : Midterm"
+author: "Pavan Malapati"
+format: pdf
+editor: visual
+---
+
+Load the Packages
+```{r}
+library(tidyverse)
+library(mdsr)
+library(nycflights13)
+library(NHANES)
+library(ggplot2)
+library(dplyr)
+```
+
+# Exercise 1
+```{r}
+head(CIACountries)
+dim(CIACountries)
+```
+
+## Exercise 1.a :  Bar plot of the categorical variable net_users.
+## Answer :
+```{r}
+ggplot(data = CIACountries,aes(x = net_users)) +
+geom_bar()
+```
+
+## Exercise 1.b : Histogram of log10(gpd), set the argument binwidth = 0.2
+## Answer :
+```{r}
+ggplot(CIACountries, aes(x = log10(gdp))) +
+  geom_histogram(binwidth = 0.2)
+```
+
+## Exercise 1.c : Scatter plot with log10(pop) on the x-axis and log10(gdp) on the y-axis. Color the points according to net_users
+## Answer :
+```{r}
+ggplot(CIACountries, aes(x = log10(pop), y = log10(gdp), color = net_users)) +
+geom_point()
+```
+
+## Exercise 1.d :  Side-by-side box plots showing the relationship between log10(gdp) and net_users.
+## Answer :
+```{r}
+ggplot(CIACountries, aes(x = net_users, y = log10(gdp))) +
+geom_boxplot()
+```
+
+## Exercise 1.e :  Density plots of log10(gdp) for each category of net_users (use facet_wrap()).
+## Answer :
+```{r}
+ggplot(CIACountries, aes(x = log10(gdp))) +
+  geom_density() +
+  facet_wrap(~ net_users)
+```
+
+# Exercise 2
+
+## Exercise 2.a : Make a stacked bar plot with the categorical variables MaritalStatus and HomeOwn. Map the categories of HomeOwn to the fill color of the bars.
+## Answer :
+```{r}
+ggplot(NHANES, aes(x = MaritalStatus, fill = HomeOwn)) + 
+  geom_bar()
+```
+
+## Exercise 2.b : Repeat part (a) but display proportions instead of counts. Write 2-3 sentences with your interpretation of this plot.
+## Answer :
+```{r}
+ggplot(NHANES, aes(x = MaritalStatus, fill = HomeOwn)) + 
+  geom_bar(position = "fill") + scale_y_continuous(labels = scales::percent)
+```
+### Interpretation:
+This suggests that marital status is strongly associated with home ownership. Married and widowed individuals are more likely to own their homes, possibly due to greater financial stability or life stage. On the other hand, people who are live-in partners, separated, or never married tend to rent more frequently, which may reflect different financial situations, lifestyle choices, or stages of life.
+
+## Exercise 2.c : Make a table with the count and average age for each category of MaritalStatus. Arrange the rows of this table according to the average age.
+## Answer :
+```{r}
+NHANES %>% group_by(MaritalStatus) %>% 
+  summarise(Count = n(), Avg_Age = mean(Age, na.rm = TRUE)) %>% 
+  arrange(Avg_Age)
+```
+
+# Exercise 3
+```{r}
+data("flights")
+```
+
+## Exercise 3.a : Flew to San Francisco International Airport (SFO).
+## Answer :
+```{r}
+SFO_flights <- flights %>%
+  filter(dest == "SFO")
+SFO_flights
+```
+
+## Exercise 3.b : Departed in summer (July, August, September).
+## Answer :
+```{r}
+summer_flights <- flights %>%
+  filter(month %in% c(7, 8, 9))
+summer_flights
+```
+
+## Exercise 3.c : Were operated by United Airlines, and had departure delays that were 10 or more minutes.
+## Answer :
+```{r}
+UA_delay <- flights %>%
+  filter(carrier == "UA", dep_delay >= 10)
+UA_delay
+```
+
+## Exercise 3.d : Arrived more than two hours late, but did not have a late departure.
+## Answer :
+```{r}
+late_arrival <- flights %>%
+  filter(arr_delay > 120, dep_delay <= 0)
+late_arrival
+```
+
+# Exercise 4
+
+## Exercise 4.a : Use group_by() and summarize() to create a data frame with the following columns: • Count of the number of flights to each destination. • Mean arrival delay for each destination. • Standard deviation of arrival delays for each destination.
+## Answer :
+```{r}
+ds <- flights %>%
+ group_by(dest) %>%
+ summarize(
+  count = n(),
+  arr_delay_mean = mean(arr_delay, na.rm = TRUE),
+  arr_delay_sd = sd(arr_delay, na.rm = TRUE)
+)
+ds
+```
+
+## Exercise 4.b :  Use left_join() to combine the data frame of grouped summary statistics from part(a) with the airports data frame. The combined data frame should contain additional columns with information about the destination airport. Your code should should recreate the following table:
+## Answer :
+```{r}
+ds <- flights %>%
+ group_by(dest) %>%
+ summarize(
+  count = n(),
+  arr_delay_mean = mean(arr_delay, na.rm = TRUE),
+  arr_delay_sd = sd(arr_delay, na.rm = TRUE)
+ )
+c <- left_join(ds, airports, by = c("dest" = "faa"))
+c
+```
+
+## Exercise 4.c : Which airports had the longest average arrival delays? Which airports had the greatest variability in their arrival delays? [Hint: use arrange()]
+## Answer :
+```{r}
+ld <- c %>%
+  arrange(desc(arr_delay_mean))
+ld
+
+gv <- c %>%
+  arrange(desc(arr_delay_sd))
+gv
+```
+
+## Exercise 4.d : In the joined table from part (b), how many rows have NA values for the airport name? What do these rows represent?
+## Answer :
+```{r}
+co <- c %>%
+ summarize(count_na_name = sum(is.na(name)))
+co
+```
+
+# Bonus : 
+
+## Use the flights data frame to answer the following questions: What month had the highest proportion of canceled flights? What month had the lowest? Interpret any seasonal patterns.
+## Answer :
+```{r}
+fc <- flights %>%
+ group_by(month) %>%
+ summarize(
+  total_flights = n(),
+  cancelled_flights = sum(is.na(dep_time)),
+  proportion = cancelled_flights / total_flights
+ ) %>%
+ arrange(desc(proportion))
+
+hp <- fc[1, ]
+hp
+
+lp <- fc[12,]
+lp
+```
+### Interpretation:
+Flight cancellations are highest during the winter months, particularly in February and December, likely due to adverse weather conditions. In contrast, cancellations are lowest during the summer months (June to August) when weather tends to be more stable. Spring and fall show moderate cancellation rates, reflecting a transition to more predictable weather.
+
